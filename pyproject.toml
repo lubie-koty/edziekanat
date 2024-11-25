@@ -1,7 +1,13 @@
 [project]
 name = "edziekanat"
 version = "0.1.0"
-description = "Add your description here"
+description = "A simple student data storage app"
 readme = "README.md"
-requires-python = ">=3.10"
-dependencies = []
+requires-python = ">=3.12"
+dependencies = [
+    "alembic>=1.14.0",
+    "asyncpg>=0.30.0",
+    "fastapi[standard]>=0.115.4",
+    "pydantic-settings>=2.6.1",
+    "sqlalchemy[asyncio]>=2.0.36",
+]
