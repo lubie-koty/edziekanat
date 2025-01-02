@@ -10,18 +10,18 @@ class Gender(Enum):
     NONBINARY = 3
 
 
-class UserData(BaseModel):
+class StudentData(BaseModel):
     index_number: int
     first_name: str
     last_name: str
-    pesel: int
-    gender: Gender
+    pesel: str
+    gender: int
     address_city: str
     address_street: str
     address_zipcode: str
 
 
-class CreateModifyUserData(BaseModel):
+class CreateModifyStudentData(BaseModel):
     first_name: str
     last_name: str
     pesel: int
@@ -33,24 +33,20 @@ class CreateModifyUserData(BaseModel):
 
 class StudentsBaseRepo(ABC):
     @abstractmethod
-    def get_student(
-        self,
-        index_number: int | None,
-        last_name: str | None,
-    ) -> UserData | None:
+    async def get_student(self, index_number: int) -> StudentData | None:
         pass
 
     @abstractmethod
-    def get_students(self) -> list[UserData]:
+    async def get_students(self, last_name: str | None = None) -> list[StudentData]:
         pass
 
     @abstractmethod
-    def add_student(self, student_data: CreateModifyUserData) -> None:
+    async def add_student(self, student_data: CreateModifyStudentData) -> None:
         pass
 
     @abstractmethod
-    def update_student(
-        self, student_id: int, student_data: CreateModifyUserData
+    async def update_student(
+        self, student_id: int, student_data: CreateModifyStudentData
     ) -> None:
         pass
 
