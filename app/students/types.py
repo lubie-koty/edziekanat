@@ -1,10 +1,13 @@
 from abc import ABC, abstractmethod
-from enum import Enum
+from enum import IntEnum
+from typing import Annotated
 
-from pydantic import BaseModel
+from pydantic import AfterValidator, BaseModel
+
+from app.utils.validators import check_pesel
 
 
-class Gender(Enum):
+class Gender(IntEnum):
     MALE = 1
     FEMALE = 2
     NONBINARY = 3
@@ -14,46 +17,78 @@ class StudentData(BaseModel):
     index_number: int
     first_name: str
     last_name: str
-    pesel: str
+    pesel: Annotated[str, AfterValidator(check_pesel)]
     gender: int
     address_city: str
     address_street: str
     address_zipcode: str
 
 
-class CreateModifyStudentData(BaseModel):
+class CreateStudentData(BaseModel):
     first_name: str
     last_name: str
-    pesel: int
+    pesel: Annotated[str, AfterValidator(check_pesel)]
     gender: Gender
     address_city: str
     address_street: str
     address_zipcode: str
 
 
+class ModifyStudentData(BaseModel):
+    first_name: str | None = None
+    last_name: str | None = None
+    pesel: Annotated[str, AfterValidator(check_pesel)] | None = None
+    gender: Gender | None = None
+    address_city: str | None = None
+    address_street: str | None = None
+    address_zipcode: str | None = None
+
+
 class StudentsBaseRepo(ABC):
     @abstractmethod
-    async def get_student(self, index_number: int) -> StudentData | None:
+    async def get_students_by_filters(
+        self,
+        index_number: int | None = None,
+        last_name: str | None = None,
+        active: bool | None = None,
+    ) -> list[StudentData]:
         pass
 
     @abstractmethod
-    async def get_students(self, last_name: str | None = None) -> list[StudentData]:
-        pass
-
-    @abstractmethod
-    async def add_student(self, student_data: CreateModifyStudentData) -> None:
+    async def add_student(self, student_data: CreateStudentData) -> None:
         pass
 
     @abstractmethod
     async def update_student(
-        self, student_id: int, student_data: CreateModifyStudentData
+        self, student_id: int, student_data: ModifyStudentData
     ) -> None:
         pass
 
     @abstractmethod
-    def delete_student(self, student_id: int) -> None:
+    async def delete_student(self, student_id: int) -> None:
         pass
 
 
 class StudentsBaseService(ABC):
-    pass
+    @abstractmethod
+    async def get_students(
+        self,
+        index_number: int | None = None,
+        last_name: str | None = None,
+        active: bool | None = None,
+    ) -> list[StudentData]:
+        pass
+
+    @abstractmethod
+    async def add_student(self, student_data: CreateStudentData) -> None:
+        pass
+
+    @abstractmethod
+    async def update_student(
+        self, student_id: int, student_data: ModifyStudentData
+    ) -> None:
+        pass
+
+    @abstractmethod
+    async def delete_student(self, student_id: int) -> None:
+        pass

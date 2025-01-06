@@ -2,33 +2,31 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.students.models import Student
-from app.students.types import StudentsBaseRepo, StudentData
+from app.students.types import (
+    CreateStudentData,
+    ModifyStudentData,
+    StudentsBaseRepo,
+    StudentData,
+)
 
 
 class StudentsRepo(StudentsBaseRepo):
     def __init__(self, db_session: AsyncSession) -> None:
         self.db_session = db_session
 
-    async def get_student(self, index_number: int) -> StudentData | None:
-        q = select(Student).where(Student.index_number == index_number)
-        result = (await self.db_session.execute(q)).scalar()
-        if not result:
-            return None
-        return StudentData(
-            index_number=result.index_number,
-            first_name=result.first_name,
-            last_name=result.last_name,
-            pesel=result.pesel,
-            gender=result.gender,
-            address_city=result.address_city,
-            address_street=result.address_street,
-            address_zipcode=result.address_zipcode,
-        )
-
-    async def get_students(self, last_name: str | None = None) -> list[StudentData]:
+    async def get_students_by_filters(
+        self,
+        index_number: int | None = None,
+        last_name: str | None = None,
+        active: bool | None = None,
+    ) -> list[StudentData]:
         q = select(Student)
+        if index_number:
+            q = q.where(Student.index_number == index_number)
         if last_name:
             q = q.where(Student.last_name == last_name)
+        if active is not None:
+            q = q.where(Student.active == active)
         result = (await self.db_session.execute(q)).scalars().all()
         return [
             StudentData(
@@ -44,5 +42,24 @@ class StudentsRepo(StudentsBaseRepo):
             for student in result
         ]
 
-    async def add_student(self, student_data: CreateModifyStudentData) -> None:
-        pass
+    async def add_student(self, student_data: CreateStudentData) -> None:
+        async with self.db_session.begin():
+            self.db_session.add(Student(**student_data.model_dump()))
+
+    async def update_student(
+        self, student_id: int, student_data: ModifyStudentData
+    ) -> None:
+        q = select(Student).where(Student.index_number == student_id)
+        existing_student = (await self.db_session.execute(q)).scalar_one()
+        for key, new_value in student_data.model_dump(exclude_none=True).items():
+            setattr(existing_student, key, new_value)
+        await self.db_session.commit()
+
+    async def delete_student(self, student_id: int) -> None:
+        q = select(Student).where(
+            Student.index_number == student_id,
+            Student.active == True,  # noqa
+        )
+        existing_student = (await self.db_session.execute(q)).scalar_one()
+        existing_student.active = False
+        await self.db_session.commit()
