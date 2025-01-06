@@ -6,6 +6,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.students.repo import StudentsRepo
 from app.students.service import StudentsService
 from app.students.types import StudentsBaseRepo
+from app.security.repo import UsersRepo
+from app.security.service import UsersService
+from app.security.types import UsersBaseRepo
 
 
 async def get_db(request: Request):
@@ -24,4 +27,16 @@ async def get_students_service(
     students_repo: Annotated[StudentsBaseRepo, Depends(get_students_repo)],
 ):
     service = StudentsService(students_repo)
+    return service
+
+
+async def get_users_repo(db_session: Annotated[AsyncSession, Depends(get_db)]):
+    repo = UsersRepo(db_session)
+    return repo
+
+
+async def get_users_service(
+    users_repo: Annotated[UsersBaseRepo, Depends(get_users_repo)],
+):
+    service = UsersService(users_repo)
     return service

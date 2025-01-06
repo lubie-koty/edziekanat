@@ -9,6 +9,7 @@ from alembic import context
 
 from app.db.base import Base
 from app.internal.config import settings
+from app.security.models import *  # noqa
 from app.students.models import *  # noqa
 
 # this is the Alembic Config object, which provides

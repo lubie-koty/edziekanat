@@ -1,13 +1,15 @@
 from typing import Annotated
 from fastapi import APIRouter, Depends
 
-from app.dependencies import get_students_service
+from app.dependencies import get_students_service, get_users_repo
 from app.students.types import StudentsBaseService, CreateStudentData, ModifyStudentData
+from app.utils.auth import JWTBearer
 
 router = APIRouter(
     prefix="/students",
     tags=["students"],
     responses={404: {"description": "Not found"}},
+    dependencies=[Depends(JWTBearer(Depends(get_users_repo)))],
 )
 
 
