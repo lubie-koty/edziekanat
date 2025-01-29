@@ -12,3 +12,6 @@ pyrightconfig.json
 
 # Enviromental variables
 .env
+
+# Alembic
+alembic/versions/*

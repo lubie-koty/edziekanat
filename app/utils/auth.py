@@ -42,7 +42,7 @@ class JWTBearer(HTTPBearer):
         self.users_repo = users_repo
         super(JWTBearer, self).__init__(auto_error=auto_error)
 
-    async def __call__(self, request: Request) -> HTTPAuthorizationCredentials | None:
+    async def __call__(self, request: Request) -> HTTPAuthorizationCredentials:
         credentials = await super(JWTBearer, self).__call__(request)
         if credentials:
             if not credentials.scheme == "Bearer":
@@ -67,7 +67,7 @@ class JWTBearer(HTTPBearer):
             payload = jwt.decode(
                 token, settings.jwt_secret_key, algorithms=[settings.jwt_algorithm]
             )
-            user_email: str = payload.get("sub")
+            user_email = payload.get("sub")
             if user_email is None:
                 return False
         except InvalidTokenError:

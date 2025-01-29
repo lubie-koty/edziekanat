@@ -1,15 +1,14 @@
 from typing import Annotated
 from fastapi import APIRouter, Depends
 
-from app.dependencies import get_students_service, get_users_repo
+from app.dependencies import get_jwt_bearer, get_students_service
 from app.students.types import StudentsBaseService, CreateStudentData, ModifyStudentData
-from app.utils.auth import JWTBearer
 
 router = APIRouter(
     prefix="/students",
     tags=["students"],
     responses={404: {"description": "Not found"}},
-    dependencies=[Depends(JWTBearer(Depends(get_users_repo)))],
+    dependencies=[Depends(get_jwt_bearer)],
 )
 
 
@@ -18,11 +17,13 @@ async def get_students(
     students_service: Annotated[StudentsBaseService, Depends(get_students_service)],
     index_number: int | None = None,
     last_name: str | None = None,
+    sorting: int | None = None,
     active: bool | None = None,
 ):
     return await students_service.get_students(
         index_number=index_number,
         last_name=last_name,
+        sorting=sorting,
         active=active,
     )
 

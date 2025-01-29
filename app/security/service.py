@@ -11,7 +11,7 @@ from app.security.types import (
     UsersBaseService,
     TokenResponse,
 )
-from app.utils.auth import create_access_token, get_password_hash, verify_password
+from app.utils.auth import create_access_token, verify_password
 
 
 class UsersService(UsersBaseService):
@@ -24,7 +24,7 @@ class UsersService(UsersBaseService):
             raise HTTPException(
                 status.HTTP_401_UNAUTHORIZED, detail="User does not exist"
             )
-        if not verify_password(get_password_hash(password), user.password_hash):
+        if not verify_password(password, user.password_hash):
             raise HTTPException(
                 status.HTTP_401_UNAUTHORIZED, detail="Incorrect password"
             )

@@ -16,11 +16,12 @@ class UsersRepo(UsersBaseRepo):
         self.db_session = db_session
 
     async def get_user(self, email: str) -> UserData | None:
-        q = select(User).where(
-            User.email == email,
-            User.active == True,  # noqa
-        )
-        result = (await self.db_session.execute(q)).scalar_one_or_none()
+        async with self.db_session.begin():
+            q = select(User).where(
+                User.email == email,
+                User.active == True,  # noqa
+            )
+            result = (await self.db_session.execute(q)).scalar_one_or_none()
         if not result:
             return None
         return UserData(
@@ -43,23 +44,25 @@ class UsersRepo(UsersBaseRepo):
             )
 
     async def update_user(self, user_id: int, user_data: ModifyUserData) -> None:
-        q = select(User).where(User.user_id == user_id)
-        existing_user = (await self.db_session.execute(q)).scalar_one()
-        if first_name := user_data.first_name:
-            existing_user.first_name = first_name
-        if last_name := user_data.last_name:
-            existing_user.last_name = last_name
-        if email := user_data.email:
-            existing_user.email = email
-        if password := user_data.password:
-            existing_user.password_hash = get_password_hash(password)
-        await self.db_session.commit()
+        async with self.db_session.begin():
+            q = select(User).where(User.user_id == user_id)
+            existing_user = (await self.db_session.execute(q)).scalar_one()
+            if first_name := user_data.first_name:
+                existing_user.first_name = first_name
+            if last_name := user_data.last_name:
+                existing_user.last_name = last_name
+            if email := user_data.email:
+                existing_user.email = email
+            if password := user_data.password:
+                existing_user.password_hash = get_password_hash(password)
+            await self.db_session.commit()
 
     async def delete_user(self, user_id: int) -> None:
-        q = select(User).where(
-            User.user_id == user_id,
-            User.active == True,  # noqa
-        )
-        existing_user = (await self.db_session.execute(q)).scalar_one()
-        existing_user.active = False
-        await self.db_session.commit()
+        async with self.db_session.begin():
+            q = select(User).where(
+                User.user_id == user_id,
+                User.active == True,  # noqa
+            )
+            existing_user = (await self.db_session.execute(q)).scalar_one()
+            existing_user.active = False
+            await self.db_session.commit()

@@ -15,10 +15,11 @@ class StudentsService(StudentsBaseService):
         self,
         index_number: int | None = None,
         last_name: str | None = None,
+        sorting: int | None = None,
         active: bool | None = None,
     ) -> list[StudentData]:
         students_list = await self.students_repo.get_students_by_filters(
-            index_number, last_name, active
+            index_number, last_name, sorting, active
         )
         return students_list
 

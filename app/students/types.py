@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from enum import IntEnum
+from enum import Enum, IntEnum
 from typing import Annotated
 
 from pydantic import AfterValidator, BaseModel
@@ -44,12 +44,19 @@ class ModifyStudentData(BaseModel):
     address_zipcode: str | None = None
 
 
+class StudentSortingType(Enum):
+    BY_INDEX = 0
+    BY_LAST_NAME = 1
+    BY_PESEL = 2
+
+
 class StudentsBaseRepo(ABC):
     @abstractmethod
     async def get_students_by_filters(
         self,
         index_number: int | None = None,
         last_name: str | None = None,
+        sorting: int | None = None,
         active: bool | None = None,
     ) -> list[StudentData]:
         pass
@@ -75,6 +82,7 @@ class StudentsBaseService(ABC):
         self,
         index_number: int | None = None,
         last_name: str | None = None,
+        sorting: int | None = None,
         active: bool | None = None,
     ) -> list[StudentData]:
         pass

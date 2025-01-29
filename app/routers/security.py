@@ -16,12 +16,12 @@ router = APIRouter(
 )
 
 
-@router.get("/login")
+@router.post("/login")
 async def login(
     users_service: Annotated[UsersBaseService, Depends(get_users_service)],
     login_data: UserLoginData,
 ):
-    return users_service.login_user(
+    return await users_service.login_user(
         email=login_data.email, password=login_data.password
     )
 
@@ -35,7 +35,7 @@ async def register(
 
 
 @router.patch("/users/{user_id}")
-async def modify_student(
+async def modify_user(
     users_service: Annotated[UsersBaseService, Depends(get_users_service)],
     user_id: int,
     user_data: ModifyUserData,
@@ -44,7 +44,7 @@ async def modify_student(
 
 
 @router.delete("/users/{user_id}")
-async def delete_student(
+async def delete_user(
     users_service: Annotated[UsersBaseService, Depends(get_users_service)],
     user_id: int,
 ):
